@@ -45,5 +45,6 @@ jobs:
           publish_branch: ${{ env.TARGET_BRANCH }}
           publish_dir: ${{ env.BUILD_DIR }}
           force_orphan: true
+          cname: ${{ vars.PAGES_CUSTOM_DOMAIN }}
 
 
