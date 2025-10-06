@@ -638,30 +638,26 @@ router.beforeEach(async (to, from, next) => {
   
 
   const getTitle = () => {
+    // 若配置尚未可用，返回空字符串，等配置加载后再由 initPageTitle 或 i18n 更新
+    try {
+      if (!SITE_CONFIG || !SITE_CONFIG.siteName) return '';
+    } catch (e) { return ''; }
 
     if (to.meta.titleKey) {
-
       try {
-
         const title = i18n.global.t(to.meta.titleKey);
-
         return `${title} - ${SITE_CONFIG.siteName}`;
-
       } catch (error) {
-
-        return SITE_CONFIG.siteName;
-
+        return SITE_CONFIG.siteName || '';
       }
-
     }
-
-    return SITE_CONFIG.siteName;
-
+    return SITE_CONFIG.siteName || '';
   };
 
   
 
-  document.title = getTitle();
+  const nextTitle = getTitle();
+  if (nextTitle) document.title = nextTitle;
 
   
 
