@@ -1922,6 +1922,7 @@ export default {
       loading,
       languageChangedSignal,
       goToShop,
+      openGroupChat,
       openDocumentation,
       downloadClient,
       hasPendingItems,
