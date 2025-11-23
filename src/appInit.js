@@ -12,10 +12,8 @@ import { useToast } from './composables/useToast';
 import initPageTitle from './utils/exposeConfig';
 import { handleUnauthorizedDomain } from './utils/domainChecker';
 
-
-if (!handleUnauthorizedDomain()) {
-  throw new Error('Unauthorized domain');
-}
+// 域名校验仅用于控制台告警，不再阻止应用初始化，避免误配置导致白屏
+handleUnauthorizedDomain();
 
 const initApp = async () => {
   try {
