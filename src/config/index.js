@@ -264,7 +264,7 @@ export const config  = {
         showImportSubscription: true,
 
         // 群聊链接地址（用于仪表盘“群聊吹水”按钮）
-        groupChatUrl: 'https://t.me/your_group',
+        groupChatUrl: 'https://t.me/heixinyun_chat',
     },
 
     // 客户端下载配置
