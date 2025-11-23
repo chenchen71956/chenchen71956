@@ -842,8 +842,6 @@ import {
 
   getCommConfig,
 
-  getTelegramBotInfo,
-
   getUserSubscribe
 
 } from '@/api/user';
@@ -1164,33 +1162,8 @@ const fetchTelegramInfo = async () => {
 
     }
 
-
-
-    try {
-
-      const botResponse = await getTelegramBotInfo();
-
-      if (botResponse && botResponse.data) {
-
-        if (botResponse.data.message && botResponse.data.message.includes('Not Found')) {
-
-          telegramBotInfo.value = null;
-
-        } else {
-
-          telegramBotInfo.value = botResponse.data;
-
-        }
-
-      }
-
-    } catch (botErr) {
-
-      console.error('Failed to fetch Telegram bot info:', botErr);
-
-      telegramBotInfo.value = null;
-
-    }
+    // 不再请求 Telegram Bot 信息，以减少 /profile 加载时的额外网络请求
+    telegramBotInfo.value = null;
 
   } catch (err) {
 
