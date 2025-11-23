@@ -216,7 +216,7 @@
                   v-if="DASHBOARD_CONFIG.groupChatUrl"
                   @click="openGroupChat"
               >
-                <IconBrandTelegram :size="16" class="btn-icon"/>
+                <IconUserPlus :size="16" class="btn-icon"/>
                 <span class="">{{ $t('dashboard.groupChat') }}</span>
               </button>
             </div>
@@ -715,7 +715,6 @@ import {
   IconBrandApple,
   IconBrandDebian,
   IconBrandFinder,
-  IconBrandTelegram,
   IconBrandGithub,
   IconBrandWindows,
   IconCalendar,
