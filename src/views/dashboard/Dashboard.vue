@@ -211,6 +211,14 @@
                 <IconMessage :size="16" class="btn-icon"/>
                 <span class="">{{ $t('dashboard.ticketSupport') }}</span>
               </button>
+              <button
+                  class="btn-outline"
+                  v-if="DASHBOARD_CONFIG.groupChatUrl"
+                  @click="openGroupChat"
+              >
+                <IconBrandTelegram :size="16" class="btn-icon"/>
+                <span class="">{{ $t('dashboard.groupChat') }}</span>
+              </button>
             </div>
           </div>
         </template>
@@ -707,6 +715,7 @@ import {
   IconBrandApple,
   IconBrandDebian,
   IconBrandFinder,
+  IconBrandTelegram,
   IconBrandGithub,
   IconBrandWindows,
   IconCalendar,
@@ -987,6 +996,13 @@ export default {
       const downloadUrl = clientConfig.clientLinks[platform];
       if (downloadUrl) {
         window.open(downloadUrl, '_blank');
+      }
+    };
+
+    const openGroupChat = () => {
+      const url = DASHBOARD_CONFIG.groupChatUrl;
+      if (url) {
+        window.open(url, '_blank');
       }
     };
 

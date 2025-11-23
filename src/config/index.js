@@ -262,6 +262,9 @@ export const config  = {
         
         // 是否显示导入订阅
         showImportSubscription: true,
+
+        // 群聊链接地址（用于仪表盘“群聊吹水”按钮）
+        groupChatUrl: 'https://t.me/your_group',
     },
 
     // 客户端下载配置

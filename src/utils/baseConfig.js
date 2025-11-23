@@ -483,6 +483,9 @@ const DEFAULT_DASHBOARD_CONFIG = {
     
     // 是否显示导入订阅
     showImportSubscription: true,
+
+    // 群聊链接地址（用于仪表盘“群聊吹水”按钮）
+    groupChatUrl: '',
 };
 
 export const DASHBOARD_CONFIG = mergeDeep(DEFAULT_DASHBOARD_CONFIG, getConfig('DASHBOARD_CONFIG'));
