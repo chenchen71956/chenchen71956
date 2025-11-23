@@ -40,6 +40,8 @@ module.exports = defineConfig({
         __VUE_OPTIONS_API__: JSON.stringify(true),
         __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
         __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
+        // 避免依赖包中的 import.meta.env.TEST 在运行时触发语法错误，构建期直接替换为 false
+        'import.meta.env.TEST': 'false',
       })
     );
     
