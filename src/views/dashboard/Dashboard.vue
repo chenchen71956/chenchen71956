@@ -211,16 +211,14 @@
                 <IconMessage :size="16" class="btn-icon"/>
                 <span class="">{{ $t('dashboard.ticketSupport') }}</span>
               </button>
-              <a
+              <button
+                  class="btn-outline"
                   v-if="DASHBOARD_CONFIG.groupChatUrl"
-                  class="btn-outline eztheme-btn"
-                  :href="DASHBOARD_CONFIG.groupChatUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  @click="openGroupChat"
               >
                 <IconBrandTelegram :size="16" class="btn-icon"/>
                 <span class="">{{ $t('dashboard.groupChat') }}</span>
-              </a>
+              </button>
             </div>
           </div>
         </template>
