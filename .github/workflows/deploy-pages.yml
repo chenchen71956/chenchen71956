@@ -1,26 +1,35 @@
-name: Build and Deploy to External Pages Repo
+name: Deploy Vue app with GitHub Pages
 
 on:
+  # Push to main/master 触发部署
   push:
     branches:
       - main
       - master
-  workflow_dispatch: {}
+
+  # 支持在 Actions 页面手动触发
+  workflow_dispatch:
+
+# GITHUB_TOKEN 的权限：允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 避免并行多次部署，保证线上稳定
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  # 构建前端并上传构建产物
+  build:
     runs-on: ubuntu-latest
-
-    env:
-      EXTERNAL_REPO: chenchen71956/chenchen71956
-      TARGET_BRANCH: gh-pages
-      BUILD_DIR: dist
-
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -28,22 +37,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Build project
         run: npm run build
 
-      - name: Prepare dist
-        run: |
-          test -d "$BUILD_DIR" || { echo "Build dir $BUILD_DIR not found"; exit 1; }
-          touch "$BUILD_DIR/.nojekyll"
-
-      - name: Deploy to external repo via token (no SSH)
-        uses: peaceiris/actions-gh-pages@v3
+      # 将 dist 目录上传为 Pages artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          personal_token: ${{ secrets.EXTERNAL_REPO_TOKEN }}
-          external_repository: ${{ env.EXTERNAL_REPO }}
-          publish_branch: ${{ env.TARGET_BRANCH }}
-          publish_dir: ${{ env.BUILD_DIR }}
-          force_orphan: true
-          cname: ${{ vars.PAGES_CUSTOM_DOMAIN }}
+          path: ./dist
+
+  # 部署到当前仓库的 GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
 
