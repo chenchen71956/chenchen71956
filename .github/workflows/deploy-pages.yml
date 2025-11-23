@@ -52,7 +52,15 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan "$SSH_HOST" >> ~/.ssh/known_hosts
-          rsync -avz --delete ./dist/ "${SSH_USER}@${SSH_HOST}:/www/wwwroot/heixin.pp.ua/"
+
+          # 部署前先停止远端 nginx，避免文件被占用（需要 SSH_USER 有权限）
+          ssh "${SSH_USER}@${SSH_HOST}" "systemctl stop nginx" || true
+
+          # 使用 -rltvz 同步文件内容和时间戳，不同步权限/所有者，减少权限差异导致的错误
+          rsync -rltvz --delete ./dist/ "${SSH_USER}@${SSH_HOST}:/www/wwwroot/heixin.pp.ua/"
+
+          # 同步完成后再启动 nginx
+          ssh "${SSH_USER}@${SSH_HOST}" "systemctl start nginx" || true
 
       # 将 dist 目录上传为 Pages artifact
       - name: Upload artifact
