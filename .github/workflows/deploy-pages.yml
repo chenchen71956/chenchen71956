@@ -40,6 +40,21 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # 使用 SSH+rsync 将 dist 内容同步到服务器 /www/wwwroot/heixin.pp.ua
+      # 需要在仓库 Secrets 中配置：SSH_HOST, SSH_USER, SSH_PRIVATE_KEY
+      - name: Deploy to heixin.pp.ua via SSH
+        if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' }}
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan "$SSH_HOST" >> ~/.ssh/known_hosts
+          rsync -avz --delete ./dist/ "${SSH_USER}@${SSH_HOST}:/www/wwwroot/heixin.pp.ua/"
+
       # 将 dist 目录上传为 Pages artifact
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
