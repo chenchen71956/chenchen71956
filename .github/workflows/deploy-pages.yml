@@ -33,6 +33,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          # 不使用缓存，每次全新安装依赖
+          cache: ''
 
       - name: Install dependencies
         run: npm install
@@ -40,8 +42,39 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # 将 dist 目录上传为 Pages artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  # 部署到当前仓库的 GitHub Pages 和自有服务器
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
       # 使用 SSH+scp 将 dist 内容同步到服务器 /www/wwwroot/heixin.pp.ua
       # 需要在仓库 Secrets 中配置：SSH_HOST, SSH_USER, SSH_PRIVATE_KEY
+      - name: Checkout (for SSH deploy)
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+
+      - name: Extract artifact
+        run: |
+          mkdir -p dist
+          tar -xf artifact.tar -C dist
+
       - name: Deploy to heixin.pp.ua via SSH (scp)
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -64,23 +97,5 @@ jobs:
 
           # 同步完成后再启动 nginx
           ssh "${SSH_USER}@${SSH_HOST}" "systemctl start nginx" || true
-
-      # 将 dist 目录上传为 Pages artifact
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-  # 部署到当前仓库的 GitHub Pages
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
 
