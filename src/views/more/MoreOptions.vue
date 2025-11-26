@@ -20,6 +20,14 @@
 
         </div>
 
+        <div class="card-body">
+
+          <p>{{ $t('more.description') }}</p>
+
+        </div>
+
+      </div>
+
       <div class="dashboard-card" v-if="giftCardHistory.length">
 
         <div class="card-header">
@@ -59,14 +67,6 @@
             </div>
 
           </div>
-
-        </div>
-
-      </div>
-
-        <div class="card-body">
-
-          <p>{{ $t('more.description') }}</p>
 
         </div>
 
@@ -476,6 +476,66 @@ const getIconComponent = (iconName) => {
 const getLocaleTitle = (key) => {
 
   return t(`more.${key}`, key);
+
+};
+
+
+
+const fetchGiftCardHistory = async () => {
+
+  try {
+
+    const response = await getGiftCardHistory({ page: 1, per_page: 15 });
+
+    if (response && response.data) {
+
+      giftCardHistory.value = response.data.data || response.data;
+
+    }
+
+  } catch (e) {
+
+    console.error('Failed to fetch gift card history', e);
+
+  }
+
+};
+
+
+
+const formatHistoryTime = (ts) => {
+
+  try {
+
+    const date = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+
+    return date.toLocaleString();
+
+  } catch (e) {
+
+    return '';
+
+  }
+
+};
+
+
+
+onMounted(async () => {
+
+  showTrafficLog.value = TRAFFICLOG_CONFIG.enableTrafficLog;
+
+  checkScreenSize();
+
+  window.addEventListener('resize', checkScreenSize);
+
+  await fetchGiftCardHistory();
+
+});
+
+
+
+onUnmounted(() => {
 
   window.removeEventListener('resize', checkScreenSize);
 
