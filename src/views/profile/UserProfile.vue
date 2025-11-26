@@ -216,19 +216,87 @@
 
                   class="gift-card-btn"
 
+                  @click="checkGiftCard"
+
+                  :disabled="isCheckingGiftCard || !giftCardCode"
+
+                >
+
+                  <span v-if="isCheckingGiftCard" class="loader"></span>
+
+                  <IconGift v-else :size="18" />
+
+                  {{ $t('profile.giftCardCheck') }}
+
+                </button>
+
+                <button
+
+                  class="gift-card-btn"
+
                   @click="redeemGiftCard"
 
-                  :disabled="isRedeeming || !giftCardCode"
+                  :disabled="!canRedeemGiftCard || isRedeeming"
 
                 >
 
                   <span v-if="isRedeeming" class="loader"></span>
 
-                  <IconGift v-else :size="18" />
-
                   {{ $t('profile.giftCardSubmit') }}
 
                 </button>
+
+              </div>
+
+              <div v-if="giftCardPreview" class="gift-card-preview">
+
+                <div class="gift-card-template">
+
+                  <div class="template-main">
+
+                    <div class="template-name">{{ giftCardPreview.template?.name }}</div>
+
+                    <div class="template-desc">{{ giftCardPreview.template?.description }}</div>
+
+                  </div>
+
+                  <div class="template-meta">
+
+                    <span>{{ giftCardStatusText }}</span>
+
+                    <span v-if="giftCardExpiresAt">{{ giftCardExpiresAt }}</span>
+
+                  </div>
+
+                </div>
+
+                <div class="gift-card-rewards" v-if="giftCardRewardPreview">
+
+                  <div v-if="giftCardRewardPreview.balance != null" class="reward-item">
+
+                    {{ $t('profile.giftCardRewardBalance', { amount: giftCardRewardPreview.balance }) }}
+
+                  </div>
+
+                  <div v-if="giftCardRewardPreview.transfer_enable != null" class="reward-item">
+
+                    {{ $t('profile.giftCardRewardTraffic') }}
+
+                  </div>
+
+                  <div v-if="giftCardRewardPreview.expire_days != null" class="reward-item">
+
+                    {{ $t('profile.giftCardRewardDays', { days: giftCardRewardPreview.expire_days }) }}
+
+                  </div>
+
+                </div>
+
+                <div v-if="giftCardCheckError" class="gift-card-error">
+
+                  {{ giftCardCheckError }}
+
+                </div>
 
               </div>
 
@@ -836,8 +904,6 @@ import {
 
   updateRemindSettings as apiUpdateRemind,
 
-  redeemGiftCard as apiRedeemGiftCard,
-
   getActiveSession,
 
   getCommConfig,
@@ -845,6 +911,8 @@ import {
   getUserSubscribe
 
 } from '@/api/user';
+
+import { checkGiftCard as apiCheckGiftCard, redeemGiftCard as apiRedeemGiftCard } from '@/api/giftCard';
 
 import { formatDate } from '@/utils/formatters';
 
@@ -950,7 +1018,17 @@ const sessionError = ref('');
 
 const giftCardCode = ref('');
 
+const isCheckingGiftCard = ref(false);
+
 const isRedeeming = ref(false);
+
+const giftCardPreview = ref(null);
+
+const giftCardRewardPreview = ref(null);
+
+const canRedeemGiftCard = ref(false);
+
+const giftCardCheckError = ref('');
 
 
 
@@ -1451,11 +1529,117 @@ const copySubscriptionUrl = () => {
 
 
 
+const checkGiftCard = async () => {
+
+  if (!giftCardCode.value) {
+
+    showError(t('profile.giftCardEmpty'));
+
+    return;
+
+  }
+
+
+
+  isCheckingGiftCard.value = true;
+
+  giftCardCheckError.value = '';
+
+  canRedeemGiftCard.value = false;
+
+
+
+  try {
+
+    const response = await apiCheckGiftCard(giftCardCode.value.trim());
+
+
+
+    if (response && response.data) {
+
+      const data = response.data;
+
+      giftCardPreview.value = data.code_info || null;
+
+      giftCardRewardPreview.value = data.reward_preview || null;
+
+      canRedeemGiftCard.value = !!data.can_redeem;
+
+      giftCardCheckError.value = data.reason || '';
+
+    }
+
+
+
+  } catch (err) {
+
+    console.error('Failed to check gift card:', err);
+
+    giftCardPreview.value = null;
+
+    giftCardRewardPreview.value = null;
+
+    canRedeemGiftCard.value = false;
+
+    giftCardCheckError.value = err?.response?.data?.error?.[1] || t('profile.giftCardError');
+
+  } finally {
+
+    isCheckingGiftCard.value = false;
+
+  }
+
+};
+
+
+
+const giftCardStatusText = computed(() => {
+
+  if (!giftCardPreview.value) return '';
+
+  return giftCardPreview.value.status_name || '';
+
+});
+
+
+
+const giftCardExpiresAt = computed(() => {
+
+  if (!giftCardPreview.value || !giftCardPreview.value.expires_at) return '';
+
+  try {
+
+    const ts = giftCardPreview.value.expires_at;
+
+    const date = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+
+    return formatDate(date.toISOString());
+
+  } catch (e) {
+
+    return '';
+
+  }
+
+});
+
+
+
 const redeemGiftCard = async () => {
 
   if (!giftCardCode.value) {
 
     showError(t('profile.giftCardEmpty'));
+
+    return;
+
+  }
+
+
+
+  if (!canRedeemGiftCard.value) {
+
+    showError(giftCardCheckError.value || t('profile.giftCardNotRedeemable'));
 
     return;
 
@@ -1469,26 +1653,39 @@ const redeemGiftCard = async () => {
 
   try {
 
-    const response = await apiRedeemGiftCard(giftCardCode.value);
+    const response = await apiRedeemGiftCard(giftCardCode.value.trim());
 
 
 
     if (response && response.data) {
 
-      success(t('profile.giftCardSuccess'));
+      success(response.data.message || t('profile.giftCardSuccess'));
 
       giftCardCode.value = '';
+
+      giftCardPreview.value = null;
+
+      giftCardRewardPreview.value = null;
+
+      canRedeemGiftCard.value = false;
+
+      giftCardCheckError.value = '';
+
 
 
       await fetchUserInfo(false);
 
     }
 
+
+
   } catch (err) {
 
     console.error('Failed to redeem gift card:', err);
 
-    showError(t('profile.giftCardError'));
+    const msg = err?.response?.data?.error?.[1] || t('profile.giftCardError');
+
+    showError(msg);
 
   } finally {
 

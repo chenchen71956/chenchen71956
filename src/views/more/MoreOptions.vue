@@ -20,6 +20,50 @@
 
         </div>
 
+      <div class="dashboard-card" v-if="giftCardHistory.length">
+
+        <div class="card-header">
+
+          <h3 class="card-title">{{ $t('profile.giftCardHistory') }}</h3>
+
+        </div>
+
+        <div class="card-body">
+
+          <div class="gift-card-history-list">
+
+            <div
+
+              v-for="item in giftCardHistory"
+
+              :key="item.id"
+
+              class="gift-card-history-item"
+
+            >
+
+              <div class="history-main">
+
+                <div class="history-title">{{ item.template_name }}</div>
+
+                <div class="history-code">{{ item.code }}</div>
+
+              </div>
+
+              <div class="history-meta">
+
+                <span class="history-time">{{ formatHistoryTime(item.created_at) }}</span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
         <div class="card-body">
 
           <p>{{ $t('more.description') }}</p>
@@ -330,6 +374,8 @@ import DomainAuthAlert from '@/components/common/DomainAuthAlert.vue';
 
 import { TRAFFICLOG_CONFIG, isXiaoV2board, MORE_PAGE_CONFIG } from '@/utils/baseConfig';
 
+import { getGiftCardHistory } from '@/api/giftCard';
+
 
 
 const { t } = useI18n();
@@ -342,11 +388,9 @@ const isSmallScreen = ref(false);
 
 
 
-
-
-
-
 const showTrafficLog = ref(false);
+
+const giftCardHistory = ref([]);
 
 const isXiaoPanel = isXiaoV2board();
 
@@ -432,29 +476,6 @@ const getIconComponent = (iconName) => {
 const getLocaleTitle = (key) => {
 
   return t(`more.${key}`, key);
-
-};
-
-
-
-onMounted(async () => {
-
-
-  
-
-  showTrafficLog.value = TRAFFICLOG_CONFIG.enableTrafficLog;
-
-  
-
-  checkScreenSize();
-
-  window.addEventListener('resize', checkScreenSize);
-
-});
-
-
-
-onUnmounted(() => {
 
   window.removeEventListener('resize', checkScreenSize);
 
