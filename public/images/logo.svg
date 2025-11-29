@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>Heixin Logo</title>
+  <!-- Background octagon (inset from canvas edges) -->
+  <polygon fill="#1F1F1F" points="160,32 352,32 480,160 480,352 352,480 160,480 32,352 32,160"/>
+  <!-- H letter -->
+  <g fill="#FFFFFF">
+    <rect x="152" y="120" width="75" height="272"/>
+    <rect x="290" y="120" width="75" height="272"/>
+    <!-- Middle bar only connects to the right vertical bar -->
+    <rect x="245" y="230" width="80" height="60"/>
+  </g>
+</svg>
